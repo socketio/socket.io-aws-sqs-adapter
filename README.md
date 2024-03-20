@@ -1,6 +1,6 @@
 # Socket.IO AWS SQS adapter
 
-The @socket.io/aws-sqs-adapter` package allows broadcasting packets between multiple Socket.IO servers.
+The `@socket.io/aws-sqs-adapter` package allows broadcasting packets between multiple Socket.IO servers.
 
 Unlike the existing [`socket.io-sqs`](https://github.com/thinkalpha/socket.io-sqs) package, this package supports binary payloads and dynamic namespaces.
 
