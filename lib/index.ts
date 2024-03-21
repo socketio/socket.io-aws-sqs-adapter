@@ -153,6 +153,19 @@ export function createAdapter(
     .then(async ({ topicArn, queueName, queueUrl, subscriptionArn }) => {
       _topicArn = topicArn;
 
+      const onTerminatedCallback = () => Promise.all([
+        sqsClient.deleteQueue({
+          QueueUrl: queueUrl,
+        }),
+        snsClient.unsubscribe({
+          SubscriptionArn: subscriptionArn,
+        }),
+      ]);
+
+      // Remove related topic and subcription on process terminated
+      process.on("uncaughtException", onTerminatedCallback);          // On developer have uncaughtException crash app
+      process.on("SIGINT", onTerminatedCallback);                     // On developer Ctrl + C to stop app excution on terminal
+
       namespaceToAdapters.forEach((adapter) => {
         adapter._topicArn = topicArn;
       });
@@ -202,14 +215,7 @@ export function createAdapter(
       }
 
       try {
-        await Promise.all([
-          sqsClient.deleteQueue({
-            QueueUrl: queueUrl,
-          }),
-          snsClient.unsubscribe({
-            SubscriptionArn: subscriptionArn,
-          }),
-        ]);
+        await onTerminatedCallback();
         debug("queue [%s] was successfully deleted", queueName);
       } catch (err) {
         debug(
