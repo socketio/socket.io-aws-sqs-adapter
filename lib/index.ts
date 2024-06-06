@@ -52,24 +52,24 @@ async function createQueue(
   sqsClient: SQS,
   opts: AdapterOptions
 ) {
-  const topicName = opts.topicName || "socket-io";
+  const topicName = opts?.topicName || "socket-io";
 
   debug("creating topic [%s]", topicName);
 
   const createTopicCommandOutput = await snsClient.createTopic({
     Name: topicName,
-    Tags: opts.topicTags,
+    Tags: opts?.topicTags,
   });
 
   debug("topic [%s] was successfully created", topicName);
 
-  const queueName = `${opts.queuePrefix || "socket-io"}-${randomId()}`;
+  const queueName = `${opts?.queuePrefix || "socket-io"}-${randomId()}`;
 
   debug("creating queue [%s]", queueName);
 
   const createQueueCommandOutput = await sqsClient.createQueue({
     QueueName: queueName,
-    tags: opts.queueTags,
+    tags: opts?.queueTags,
   });
 
   debug("queue [%s] was successfully created", queueName);
