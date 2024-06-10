@@ -140,7 +140,7 @@ async function createQueue(
 export function createAdapter(
   snsClient: SNS,
   sqsClient: SQS,
-  opts: AdapterOptions & ClusterAdapterOptions
+  opts: AdapterOptions & ClusterAdapterOptions = {}
 ) {
   let isClosed = false;
   let _topicArn: string;
