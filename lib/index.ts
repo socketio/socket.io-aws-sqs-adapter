@@ -1,4 +1,4 @@
-import { ClusterAdapterWithHeartbeat } from "socket.io-adapter";
+import { type Adapter, ClusterAdapterWithHeartbeat } from "socket.io-adapter";
 import type {
   ClusterAdapterOptions,
   ClusterMessage,
@@ -149,7 +149,7 @@ export function createAdapter(
 
   const queueCreation = createQueue(snsClient, sqsClient, opts);
 
-  queueCreation
+  const finishedPromise = queueCreation
     .then(async ({ topicArn, queueName, queueUrl, subscriptionArn }) => {
       _topicArn = topicArn;
 
@@ -236,16 +236,17 @@ export function createAdapter(
       });
     };
 
-    const defaultClose = adapter.close;
+    const defaultClose = (adapter as Adapter).close;
 
-    adapter.close = () => {
+    adapter.close = async () => {
       namespaceToAdapters.delete(nsp.name);
 
       if (namespaceToAdapters.size === 0) {
         isClosed = true;
       }
 
-      defaultClose.call(adapter);
+      await defaultClose.call(adapter);
+      await finishedPromise;
     };
 
     return adapter;
