@@ -45,6 +45,14 @@ const io = new Server({
 // wait for the creation of the SQS queue
 await io.of("/").adapter.init();
 
+const gracefulShutdown = async () => {
+  // wait for the deletion of the SQS queue and the SNS subscription
+  await io.close();
+};
+
+process.once("SIGINT", gracefulShutdown);
+process.once("SIGTERM", gracefulShutdown);
+
 io.listen(3000);
 ```
 
