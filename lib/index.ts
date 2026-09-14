@@ -168,6 +168,7 @@ export function createAdapter(
   let _topicArn: string;
 
   const namespaceToAdapters = new Map<string, PubSubAdapter>();
+  const abortController = new AbortController();
 
   const queueCreation = createQueue(snsClient, sqsClient, opts);
 
@@ -180,12 +181,17 @@ export function createAdapter(
       });
 
       async function poll() {
-        const output = await sqsClient.receiveMessage({
-          QueueUrl: queueUrl,
-          MaxNumberOfMessages: 10, // default 1, max 10
-          WaitTimeSeconds: 5,
-          MessageAttributeNames: ["All"],
-        });
+        const output = await sqsClient.receiveMessage(
+          {
+            QueueUrl: queueUrl,
+            MaxNumberOfMessages: 10, // default 1, max 10
+            WaitTimeSeconds: 5,
+            MessageAttributeNames: ["All"],
+          },
+          {
+            abortSignal: abortController.signal,
+          }
+        );
 
         if (output.Messages) {
           debug("received %d message(s)", output.Messages.length);
@@ -219,6 +225,10 @@ export function createAdapter(
           debug("polling for new messages");
           await poll();
         } catch (err) {
+          if (isClosed) {
+            break;
+          }
+
           debug("an error has occurred: %s", (err as Error).message);
         }
       }
@@ -267,6 +277,7 @@ export function createAdapter(
 
       if (shouldClose) {
         isClosed = true;
+        abortController.abort();
       }
 
       await defaultClose.call(adapter);
