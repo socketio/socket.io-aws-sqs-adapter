@@ -27,6 +27,10 @@ function randomId() {
   return randomBytes(8).toString("hex");
 }
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export interface AdapterOptions {
   /**
    * The ARN of a preexisting SNS topic to reuse instead of creating a new one.
@@ -244,6 +248,8 @@ export function createAdapter(
           }
 
           debug("an error has occurred: %s", (err as Error).message);
+
+          await sleep(5_000);
         }
       }
 
