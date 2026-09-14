@@ -29,7 +29,7 @@ function randomId() {
 export interface AdapterOptions {
   /**
    * The name of the SNS topic.
-   * @default "socket.io"
+   * @default "socket-io"
    */
   topicName?: string;
   /**
@@ -38,7 +38,7 @@ export interface AdapterOptions {
   topicTags?: CreateTopicCommandInput["Tags"];
   /**
    * The prefix of the SQS queue.
-   * @default "socket.io"
+   * @default "socket-io"
    */
   queuePrefix?: string;
   /**
