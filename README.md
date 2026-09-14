@@ -58,16 +58,18 @@ io.listen(3000);
 
 ## Options
 
-| Name                | Description                                                                | Default value |
-|---------------------|----------------------------------------------------------------------------|---------------|
-| `topicArn`          | The ARN of an existing SNS topic to reuse.                                 | `-`           |
-| `topicName`         | The name of the SNS topic. Ignored if `topicArn` is provided.              | `socket-io`   |
-| `topicTags`         | The tags to apply to the new SNS topic. Ignored if `topicArn` is provided. | `-`           |
-| `queueName`         | A function used to generate the SQS queue name from its random ID.         | `-`           |
-| `queuePrefix`       | The prefix of the SQS queue. Ignored if `queueName` is provided.           | `socket-io`   |
-| `queueTags`         | The tags to apply to the new SQS queue.                                    | `-`           |
-| `heartbeatInterval` | The number of ms between two heartbeats.                                   | `5_000`       |
-| `heartbeatTimeout`  | The number of ms without heartbeat before we consider a node down.         | `10_000`      |
+| Name                     | Description                                                                                                | Default value |
+|--------------------------|------------------------------------------------------------------------------------------------------------|---------------|
+| `topicArn`               | The ARN of an existing SNS topic to reuse.                                                                 | `-`           |
+| `topicName`              | The name of the SNS topic. Ignored if `topicArn` is provided.                                              | `socket-io`   |
+| `topicTags`              | The tags to apply to the new SNS topic. Ignored if `topicArn` is provided.                                 | `-`           |
+| `queueName`              | A function used to generate the SQS queue name from its random ID.                                         | `-`           |
+| `queuePrefix`            | The prefix of the SQS queue. Ignored if `queueName` is provided.                                           | `socket-io`   |
+| `queueTags`              | The tags to apply to the new SQS queue.                                                                    | `-`           |
+| `sqsMaxNumberOfMessages` | The maximum number of messages to return.                                                                  | `10`          |
+| `sqsWaitTimeSeconds`     | The duration (in seconds) for which the call waits for a message to arrive in the queue before returning.  | `5`           |
+| `heartbeatInterval`      | The number of ms between two heartbeats.                                                                   | `5_000`       |
+| `heartbeatTimeout`       | The number of ms without heartbeat before we consider a node down.                                         | `10_000`      |
 
 ## License
 

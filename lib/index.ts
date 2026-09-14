@@ -57,6 +57,20 @@ export interface AdapterOptions {
    * The tags to apply to the new SQS queue.
    */
   queueTags?: CreateQueueCommandInput["tags"];
+  /**
+   * The maximum number of messages to return.
+   * The value must be between 1 and 10.
+   *
+   * @default 10
+   */
+  sqsMaxNumberOfMessages?: number;
+  /**
+   * The duration, in seconds, for which the call waits for a message to arrive in the queue before returning.
+   * The value must be between 1 and 20.
+   *
+   * @default 5
+   */
+  sqsWaitTimeSeconds?: number;
 }
 
 async function createQueue(
@@ -184,8 +198,8 @@ export function createAdapter(
         const output = await sqsClient.receiveMessage(
           {
             QueueUrl: queueUrl,
-            MaxNumberOfMessages: 10, // default 1, max 10
-            WaitTimeSeconds: 5,
+            MaxNumberOfMessages: opts.sqsMaxNumberOfMessages ?? 10,
+            WaitTimeSeconds: opts.sqsWaitTimeSeconds ?? 5,
             MessageAttributeNames: ["All"],
           },
           {
