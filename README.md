@@ -62,7 +62,8 @@ io.listen(3000);
 |---------------------|--------------------------------------------------------------------|---------------|
 | `topicName`         | The name of the SNS topic.                                         | `socket-io`   |
 | `topicTags`         | The tags to apply to the new SNS topic.                            | `-`           |
-| `queuePrefix`       | The prefix of the SQS queue.                                       | `socket-io`   |
+| `queuePrefix`       | The prefix of the SQS queue. Ignored if `queueName` is provided.   | `socket-io`   |
+| `queueName`         | A function used to generate the SQS queue name from its random ID. | `-`           |
 | `queueTags`         | The tags to apply to the new SQS queue.                            | `-`           |
 | `heartbeatInterval` | The number of ms between two heartbeats.                           | `5_000`       |
 | `heartbeatTimeout`  | The number of ms without heartbeat before we consider a node down. | `10_000`      |
