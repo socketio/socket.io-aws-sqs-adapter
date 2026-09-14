@@ -45,6 +45,11 @@ export interface AdapterOptions {
    * The tags to apply to the new SQS queue.
    */
   queueTags?: CreateQueueCommandInput["tags"];
+  /**
+   * How to create the name of the queue, given the random ID assigned to it.
+   * Causes `queuePrefix` to be ignored.
+   */
+  queueName?: (id: string) => string;
 }
 
 async function createQueue(
@@ -63,7 +68,9 @@ async function createQueue(
 
   debug("topic [%s] was successfully created", topicName);
 
-  const queueName = `${opts.queuePrefix || "socket-io"}-${randomId()}`;
+  const queueName = opts.queueName
+    ? opts.queueName(randomId())
+    : `${opts.queuePrefix || "socket-io"}-${randomId()}`;
 
   debug("creating queue [%s]", queueName);
 
