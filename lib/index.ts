@@ -28,6 +28,11 @@ function randomId() {
 
 export interface AdapterOptions {
   /**
+   * The ARN of a preexisting SNS topic to reuse, instead of creating a new one.
+   * Causes `topicName` and `topicTags` to be ignored.
+   */
+  topicArn?: string;
+  /**
    * The name of the SNS topic.
    * @default "socket.io"
    */
@@ -56,12 +61,19 @@ async function createQueue(
 
   debug("creating topic [%s]", topicName);
 
-  const createTopicCommandOutput = await snsClient.createTopic({
-    Name: topicName,
-    Tags: opts.topicTags,
-  });
+  let topicArn: string;
+  if (opts.topicArn) {
+    topicArn = opts.topicArn;
+  } else {
+    const createTopicCommandOutput = await snsClient.createTopic({
+      Name: topicName,
+      Tags: opts.topicTags,
+    });
 
-  debug("topic [%s] was successfully created", topicName);
+    debug("topic [%s] was successfully created", topicName);
+
+    topicArn = createTopicCommandOutput.TopicArn!;
+  }
 
   const queueName = `${opts.queuePrefix || "socket-io"}-${randomId()}`;
 
@@ -80,7 +92,6 @@ async function createQueue(
     AttributeNames: ["QueueArn"],
   });
 
-  const topicArn = createTopicCommandOutput.TopicArn!;
   const queueArn = getQueueAttributesCommandOutput.Attributes?.QueueArn!;
 
   await sqsClient.setQueueAttributes({
@@ -108,7 +119,7 @@ async function createQueue(
   });
 
   const subscribeCommandOutput = await snsClient.subscribe({
-    TopicArn: createTopicCommandOutput.TopicArn,
+    TopicArn: topicArn,
     Protocol: "sqs",
     Endpoint: queueArn,
     Attributes: { RawMessageDelivery: "true" },
