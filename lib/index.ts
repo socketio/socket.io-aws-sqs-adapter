@@ -29,16 +29,27 @@ function randomId() {
 
 export interface AdapterOptions {
   /**
-   * The name of the SNS topic.
+   * The ARN of a preexisting SNS topic to reuse instead of creating a new one.
+   */
+  topicArn?: string;
+  /**
+   * The name of the SNS topic. Ignored if `topicArn` is provided.
    * @default "socket-io"
    */
   topicName?: string;
   /**
-   * The tags to apply to the new SNS topic.
+   * The tags to apply to the new SNS topic. Ignored if `topicArn` is provided.
    */
   topicTags?: CreateTopicCommandInput["Tags"];
   /**
-   * The prefix of the SQS queue.
+   * A function used to generate the SQS queue name from its random ID.
+   *
+   * @example
+   * const queueName = (randomId: string) => `my_prefix_${randomId}`,
+   */
+  queueName?: (id: string) => string;
+  /**
+   * The prefix of the SQS queue. Ignored if `queueName` is provided.
    * @default "socket-io"
    */
   queuePrefix?: string;
@@ -46,11 +57,6 @@ export interface AdapterOptions {
    * The tags to apply to the new SQS queue.
    */
   queueTags?: CreateQueueCommandInput["tags"];
-  /**
-   * How to create the name of the queue, given the random ID assigned to it.
-   * Causes `queuePrefix` to be ignored.
-   */
-  queueName?: (id: string) => string;
 }
 
 async function createQueue(
@@ -58,16 +64,24 @@ async function createQueue(
   sqsClient: SQS,
   opts: AdapterOptions
 ) {
-  const topicName = opts.topicName || "socket-io";
+  let topicArn: string;
+  if (opts.topicArn) {
+    topicArn = opts.topicArn;
+    debug("using existing topic [%s]", topicArn);
+  } else {
+    const topicName = opts.topicName || "socket-io";
 
-  debug("creating topic [%s]", topicName);
+    debug("creating topic [%s]", topicName);
 
-  const createTopicCommandOutput = await snsClient.createTopic({
-    Name: topicName,
-    Tags: opts.topicTags,
-  });
+    const createTopicCommandOutput = await snsClient.createTopic({
+      Name: topicName,
+      Tags: opts.topicTags,
+    });
 
-  debug("topic [%s] was successfully created", topicName);
+    debug("topic [%s] was successfully created", topicName);
+
+    topicArn = createTopicCommandOutput.TopicArn!;
+  }
 
   const queueId = randomId();
   const queueName = opts.queueName
@@ -89,7 +103,6 @@ async function createQueue(
     AttributeNames: ["QueueArn"],
   });
 
-  const topicArn = createTopicCommandOutput.TopicArn!;
   const queueArn = getQueueAttributesCommandOutput.Attributes?.QueueArn!;
 
   await sqsClient.setQueueAttributes({
@@ -117,7 +130,7 @@ async function createQueue(
   });
 
   const subscribeCommandOutput = await snsClient.subscribe({
-    TopicArn: createTopicCommandOutput.TopicArn,
+    TopicArn: topicArn,
     Protocol: "sqs",
     Endpoint: queueArn,
     Attributes: { RawMessageDelivery: "true" },
@@ -126,7 +139,7 @@ async function createQueue(
   debug(
     "queue [%s] has successfully subscribed to topic [%s]",
     queueName,
-    topicName
+    topicArn
   );
 
   return {
