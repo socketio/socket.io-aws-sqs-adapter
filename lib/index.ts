@@ -243,10 +243,10 @@ export function createAdapter(
 
       if (namespaceToAdapters.size === 0) {
         isClosed = true;
+        await finishedPromise;
       }
 
       await defaultClose.call(adapter);
-      await finishedPromise;
     };
 
     return adapter;
