@@ -286,12 +286,10 @@ export class PubSubAdapter extends ClusterAdapterWithHeartbeat {
       },
     };
 
-    // @ts-ignore
-    if (message.data) {
+    if ("data" in message && message.data) {
       // no binary can be included in the body, so we include it in a message attribute
       messageAttributes.data = {
         DataType: "Binary",
-        // @ts-ignore
         BinaryValue: encode(message.data),
       };
     }
@@ -326,11 +324,9 @@ export class PubSubAdapter extends ClusterAdapterWithHeartbeat {
       },
     };
 
-    // @ts-ignore
     if (response.data) {
       messageAttributes.data = {
         DataType: "Binary",
-        // @ts-ignore
         BinaryValue: encode(response.data),
       };
     }
